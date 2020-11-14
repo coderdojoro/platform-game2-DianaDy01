@@ -19,7 +19,7 @@ export default {
   physics: {
     default: 'arcade',
     arcade: {
-      gravity: {y: 750},
+      
       debug: false,
       debugShowVelocity: true,
       debugShowBody: true,
