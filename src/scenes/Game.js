@@ -76,7 +76,10 @@ class Game extends Phaser.Scene {
     this.physics.add.collider(hero, groundLayer);
     groundLayer.setCollisionBetween(groundTiles.firstgid, groundTiles.firstgid + groundTiles.total, true);
 
-
+    this.cameras.main.startFollow(hero);
+    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.physics.world.setBoundsCollision(true, true, false, true);
 
   }
 
