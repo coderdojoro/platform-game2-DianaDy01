@@ -9,12 +9,15 @@ class Game extends Phaser.Scene {
     this.load.image('mage', 'assets/mage/mage.png');
     this.load.spritesheet('idle-spritesheet', 'assets/mage/idle.png', { frameWidth: 171, frameHeight: 128 });
     this.load.spritesheet('walk-spritesheet', 'assets/mage/walk.png', { frameWidth: 171, frameHeight: 128 });
+    this.load.spritesheet('run-spritesheet', 'assets/mage/run.png', { frameWidth: 171, frameHeight: 128 });
     this.load.spritesheet('jump-spritesheet', 'assets/mage/jump.png', { frameWidth: 171, frameHeight: 128 });
     this.load.spritesheet('double-jump-spritesheet', 'assets/mage/double-jump.png', { frameWidth: 171, frameHeight: 128 });
+    this.load.spritesheet('fall-spritesheet', 'assets/mage/fall.png', { frameWidth: 171, frameHeight: 128 });
 
     this.load.tilemapTiledJSON('level1-tilemap', 'assets/tilemap.json');
-    this.load.image('ground-image', 'assets/tiles/tiles.png ');
+    this.load.spritesheet('ground-image', 'assets/tiles/tiles.png', { frameWidth: 32, frameHeight: 32 });
     this.load.image('bush-image', 'assets/tiles/bush-and-trees.png');
+
   }
 
   create() {
@@ -40,16 +43,28 @@ class Game extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers('jump-spritesheet', {}),
       frameRate: 6,
       repeat: -1
-
     });
 
     this.anims.create({
       key: 'hero-double-jump',
       frames: this.anims.generateFrameNumbers('double-jump-spritesheet', {}),
-      frameRate: 15,
+      frameRate: 20,
       repeat: 0
     });
 
+    this.anims.create({
+      key: 'hero-fall',
+      frames: this.anims.generateFrameNumbers('fall-spritesheet', {}),
+      frameRate: 10,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: 'hero-run',
+      frames: this.anims.generateFrameNumbers('run-spritesheet', {}),
+      frameRate: 6,
+      repeat: -1
+    });
 
     let map = this.make.tilemap({ key: 'level1-tilemap' });
     let groundTiles = map.addTilesetImage('ground', 'ground-image');
@@ -60,8 +75,8 @@ class Game extends Phaser.Scene {
     let heroX;
     let heroY;
     for (let a = 0; a < objects.length; a++) {
-      let object = objects[0];
-      if (object.name == 'Start') {
+      let object = objects[a];
+      if (object.name == 'spawn') {
         heroX = object.x;
         heroY = object.y
       }
@@ -70,8 +85,18 @@ class Game extends Phaser.Scene {
 
     let bkg = map.createStaticLayer('background', [groundTiles, bushTiles]);
     let hero = new Hero(this, heroX, heroY);
+    let spikeGroup = this.physics.add.group({ immovable: true, allowGravity: false });
+    for (let a = 0; a < objects.length; a++) {
+      let object = objects[a];
+      if (object.name == 'spike') {
+        let spike = spikeGroup.create(object.x, object.y, 'ground-image', object.gid - groundTiles.firstgid);
+        spike.setOrigin(0, 1);
+      }
+    }
     let groundLayer = map.createStaticLayer('ground', [groundTiles, bushTiles]);
     let fgd = map.createStaticLayer('foreground', [groundTiles, bushTiles])
+
+    this.physics.add.overlap(hero,spikeGroup,hero.spikeOverlap,null,hero);
 
     this.physics.add.collider(hero, groundLayer);
     groundLayer.setCollisionBetween(groundTiles.firstgid, groundTiles.firstgid + groundTiles.total, true);
@@ -80,7 +105,6 @@ class Game extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
     this.physics.world.setBoundsCollision(true, true, false, true);
-
   }
 
 
