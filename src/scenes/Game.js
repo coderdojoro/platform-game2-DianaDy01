@@ -13,6 +13,14 @@ class Game extends Phaser.Scene {
     this.load.spritesheet('jump-spritesheet', 'assets/mage/jump.png', { frameWidth: 171, frameHeight: 128 });
     this.load.spritesheet('double-jump-spritesheet', 'assets/mage/double-jump.png', { frameWidth: 171, frameHeight: 128 });
     this.load.spritesheet('fall-spritesheet', 'assets/mage/fall.png', { frameWidth: 171, frameHeight: 128 });
+    this.load.spritesheet('death-spritesheet', 'assets/mage/death.png', { frameWidth: 171, frameHeight: 128 });
+    this.load.audio('hero-death', 'assets/mage/death.mp3');
+
+    this.load.image('background4', 'assets/wallpapers/background4.png');
+    this.load.image('background3', 'assets/wallpapers/background3.png');
+    this.load.image('background2', 'assets/wallpapers/background2.png');
+    this.load.image('background1', 'assets/wallpapers/background1.png');
+
 
     this.load.tilemapTiledJSON('level1-tilemap', 'assets/tilemap.json');
     this.load.spritesheet('ground-image', 'assets/tiles/tiles.png', { frameWidth: 32, frameHeight: 32 });
@@ -66,7 +74,22 @@ class Game extends Phaser.Scene {
       repeat: -1
     });
 
+    this.anims.create({
+      key: 'hero-death',
+      frames: this.anims.generateFrameNumbers('death-spritesheet', {}),
+      frameRate: 6,
+      repeat: 0
+    });
+
+    this.deathSound = this.sound.add('hero-death', { loop: false, volume: 1 });
+
+
     let map = this.make.tilemap({ key: 'level1-tilemap' });
+    let background4 = map.addTilesetImage('wallpaper4', 'background4');
+    let background3 = map.addTilesetImage('wallpaper3', 'background3');
+    let background2 = map.addTilesetImage('wallpaper2', 'background2');
+    let background1 = map.addTilesetImage('wallpaper1', 'background1');
+
     let groundTiles = map.addTilesetImage('ground', 'ground-image');
     let bushTiles = map.addTilesetImage('bush', 'bush-image');
 
@@ -78,7 +101,7 @@ class Game extends Phaser.Scene {
       let object = objects[a];
       if (object.name == 'spawn') {
         heroX = object.x;
-        heroY = object.y
+        heroY = object.y;
       }
     }
 
@@ -96,7 +119,7 @@ class Game extends Phaser.Scene {
     let groundLayer = map.createStaticLayer('ground', [groundTiles, bushTiles]);
     let fgd = map.createStaticLayer('foreground', [groundTiles, bushTiles])
 
-    this.physics.add.overlap(hero,spikeGroup,hero.spikeOverlap,null,hero);
+    this.physics.add.overlap(hero, spikeGroup, hero.spikeOverlap, null, hero);
 
     this.physics.add.collider(hero, groundLayer);
     groundLayer.setCollisionBetween(groundTiles.firstgid, groundTiles.firstgid + groundTiles.total, true);

@@ -12,6 +12,8 @@ class Hero extends Phaser.GameObjects.Sprite {
 
     constructor(scene, x, y) {
         super(scene, x, y, 'mage');
+        this.initialX=x;
+        this.initialY=y;
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -38,7 +40,9 @@ class Hero extends Phaser.GameObjects.Sprite {
         if (!(this.body instanceof Phaser.Physics.Arcade.Body)) {
             return;
         }
-
+        if (this.heroState == 'death') {
+            return;
+        }
 
         if (this.keyLeft.isUp && this.keyRight.isUp && this.body.onFloor() && this.body.velocity.y == 0) {
             this.body.setAccelerationX(0);
@@ -133,11 +137,24 @@ class Hero extends Phaser.GameObjects.Sprite {
             this.animState = 'fall';
         }
 
-        console.log("heroState:" + this.heroState + " animState:" + this.animState);
+        //console.log("heroState:" + this.heroState + " animState:" + this.animState);
 
     }
     spikeOverlap(hero, tiles) {
-        console.log('a murit');
+        if (this.heroState != 'death') {
+            this.anims.play('hero-death');
+            this.heroState = 'death';
+            this.animState = 'death';
+            this.body.stop();
+            this.scene.deathSound.play();
+            this.once(Phaser.Animations.Events.SPRITE_ANIMATION_COMPLETE,()=>{
+                this.heroState='idle';
+                this.setX(this.initialX); 
+                this.setY(this.initialY);
+            },this);
+            
+        }
+
     }
 }
 
